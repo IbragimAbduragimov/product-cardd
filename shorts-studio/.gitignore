@@ -1,0 +1,10 @@
+node_modules/
+.hyperframes/
+output/*
+!output/.gitkeep
+input/*
+!input/.gitkeep
+projects/*
+!projects/.gitkeep
+templates/selftest/assets/gsap.min.js
+templates/selftest/assets/source.mp4

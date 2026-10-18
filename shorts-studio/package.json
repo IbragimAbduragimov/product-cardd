@@ -1,0 +1,13 @@
+{
+  "name": "shorts-studio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "preselftest": "node scripts/prepare-selftest.mjs",
+    "selftest": "hyperframes render templates/selftest -o output/selftest.mp4 --quality draft",
+    "check:selftest": "node scripts/prepare-selftest.mjs && hyperframes check templates/selftest"
+  },
+  "dependencies": {
+    "gsap": "3.14.2"
+  }
+}
