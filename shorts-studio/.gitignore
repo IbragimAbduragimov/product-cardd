@@ -8,3 +8,5 @@ projects/*
 !projects/.gitkeep
 templates/selftest/assets/gsap.min.js
 templates/selftest/assets/source.mp4
+subtitles/*
+!subtitles/.gitkeep
