@@ -59,12 +59,15 @@ class Pipe:
         self.j, self.frame = -1, None
 
     def get(self, j):
+        j = max(j, 0)                       # начало плана между кадрами исходника → первый кадр
         while self.j < j:
             b = self.p.stdout.read(self.n)
-            if len(b) < self.n:
+            if len(b) < self.n:             # поток кончился раньше — держим последний кадр
                 break
             self.frame = np.frombuffer(b, np.uint8).reshape(self.shape)
             self.j += 1
+        if self.frame is None:
+            raise RuntimeError("источник не отдал ни одного кадра")
         return self.frame
 
     def close(self):
