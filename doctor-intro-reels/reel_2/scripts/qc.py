@@ -55,7 +55,7 @@ def main():
         ref = src[c["src"]][int(s * 200):int(e * 200)]
         ref = (ref - ref.mean()) / (ref.std() + 1e-9)
         exp = c["out"] + (s - c["a"])
-        lo = int((exp - 0.3) * 200)
+        lo = max(0, int((exp - 0.3) * 200))
         seg = out[lo:lo + len(ref) + 120]
         seg = (seg - seg.mean()) / (seg.std() + 1e-9)
         cc = fftconvolve(seg, ref[::-1], mode="valid")
