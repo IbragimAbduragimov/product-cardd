@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<link rel="stylesheet" href="common.css">
+<style>
+  .row { position: absolute; left: 92px; width: 900px; height: 120px; display: flex; align-items: center; gap: 40px; }
+  .ico { width: 108px; height: 108px; flex: none; }
+  .name { font: 600 58px "Inter Display"; letter-spacing: -0.4px; }
+  .num { position: absolute; left: 92px; font: 600 24px "Inter"; letter-spacing: 3px; color: var(--faint); }
+  .rule { position: absolute; left: 240px; right: 88px; height: 2px; background: rgba(255,255,255,0.10); }
+</style></head>
+<body>
+<div id="bg"></div>
+<div class="layer" id="scene">
+  <div class="hdr" id="hdr">
+    <div class="label">Что определяет здоровье</div>
+    <div class="title">Четыре фактора</div>
+  </div>
+  <div id="rows"></div>
+</div>
+<script src="common.js"></script>
+<script>
+  const ICONS = {
+    // образ жизни — яблоко
+    life: '<path d="M54 40c-6-6-22-6-24 12-2 16 10 34 24 30 14 4 26-14 24-30-2-18-18-18-24-12z"/><path d="M54 40c0-8 3-14 9-18"/><path d="M58 30c6-6 14-6 18-2-4 6-12 8-18 2z"/>',
+    // наследственность — двойная спираль
+    dna: '<path d="M38 18c0 18 32 18 32 36s-32 18-32 36"/><path d="M70 18c0 18-32 18-32 36s32 18 32 36"/><path d="M44 27h20M42 45h24M42 63h24M44 81h20"/>',
+    // окружающая среда — лист
+    leaf: '<path d="M26 82C26 50 46 28 84 24c-2 36-22 58-58 58z"/><path d="M26 82L66 42"/>',
+    // здравоохранение — медицинский крест
+    care: '<path d="M44 22h20v22h22v20H64v22H44V64H22V44h22z" stroke-linejoin="round"/>',
+  };
+  const ROWS = [["life", "Образ жизни", "f1"], ["dna", "Наследственность", "f2"],
+                ["leaf", "Окружающая среда", "f3"], ["care", "Здравоохранение", "f4"]];
+  const rowsEl = $("rows");
+  ROWS.forEach(([ico, name, cue], i) => {
+    const y = 612 + i * 150;
+    rowsEl.insertAdjacentHTML("beforeend", `
+      <div class="row" id="r${i}" style="top:${y}px">
+        <svg class="ico" viewBox="0 0 108 108">
+          <circle id="c${i}" cx="54" cy="54" r="51" fill="none" stroke="rgba(216,188,142,0.55)" stroke-width="2"/>
+          <g id="g${i}" fill="none" stroke="#d8bc8e" stroke-width="3.2" stroke-linecap="round">${ICONS[ico]}</g>
+        </svg>
+        <div class="name">${name}</div>
+      </div>
+      <div class="rule" id="u${i}" style="top:${y + 135}px"></div>`);
+  });
+  function render(t) {
+    appear($("hdr"), t, -0.15, 0.6);
+    ROWS.forEach(([, , cue], i) => {
+      const s = C[cue] - 0.12;
+      appear($(`r${i}`), t, s, 0.55, 30);
+      draw($(`c${i}`), easeOut(prog(t, s, 0.8)));
+      [...$(`g${i}`).children].forEach((p) => draw(p, easeOut(prog(t, s + 0.15, 0.9))));
+      const u = $(`u${i}`); const pu = easeOut(prog(t, s + 0.2, 0.7));
+      u.style.opacity = pu; u.style.transform = `scaleX(${pu})`; u.style.transformOrigin = "0 0";
+    });
+    breathe($("scene"), t, C.dur);
+  }
+</script>
+</body></html>

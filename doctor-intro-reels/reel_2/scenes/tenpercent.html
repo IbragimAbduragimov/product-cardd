@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<link rel="stylesheet" href="common.css">
+<style>
+  .big { position: absolute; left: 92px; top: 318px; font: 600 210px/1 "Inter Display"; letter-spacing: -6px; }
+  .cap { position: absolute; left: 100px; top: 548px; font: 500 32px "Inter"; color: var(--soft); }
+  .lab { position: absolute; left: 100px; top: 278px; }
+  .key { position: absolute; left: 0; right: 0; top: 1214px; display: flex; justify-content: center; gap: 46px;
+         font: 500 27px "Inter"; color: var(--soft); }
+  .key span { display: flex; align-items: center; gap: 14px; }
+  .key i { width: 18px; height: 18px; border-radius: 50%; display: block; }
+</style></head>
+<body>
+<div id="bg"></div>
+<div class="layer" id="scene">
+  <div class="label lab" id="lab1">Вклад медицины</div>
+  <div class="label lab" id="lab2">Другие факторы</div>
+  <div class="big tnum" id="n10" style="color: var(--acc)">10%</div>
+  <div class="big tnum" id="n90">90%</div>
+  <div class="cap" id="cap1">в состояние организма</div>
+  <div class="cap" id="cap2">образ жизни · наследственность · среда</div>
+  <svg class="layer" width="1080" height="1920" viewBox="0 0 1080 1920">
+    <defs>
+      <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <g id="dots"></g>
+  </svg>
+  <div class="key" id="key">
+    <span><i style="background: var(--acc)"></i>медицина</span>
+    <span id="k2"><i style="background: #fff"></i>другие факторы</span>
+  </div>
+</div>
+<script src="common.js"></script>
+<script>
+  // сетка 10×10: каждая точка — 1 %
+  const G = $("dots"), DOTS = [];
+  const X0 = 296, Y0 = 676, STEP = 54;
+  for (let r = 0; r < 10; r++) for (let c = 0; c < 10; c++) {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    el.setAttribute("cx", X0 + c * STEP); el.setAttribute("cy", Y0 + r * STEP); el.setAttribute("r", 13);
+    G.appendChild(el); DOTS.push({ el, r, c, med: r === 9 });
+  }
+  function render(t) {
+    // числа и подписи
+    const inMed = easeOut(prog(t, C.med - 0.1, 0.6)), outMed = easeOut(prog(t, C.decisive - 0.45, 0.4));
+    $("lab1").style.opacity = inMed * (1 - outMed);
+    const pTen = prog(t, C.ten - 0.05, 0.9);
+    const n10 = $("n10");
+    n10.textContent = Math.round(10 * easeOut(pTen)) + "%";
+    n10.style.opacity = easeOut(prog(t, C.ten - 0.15, 0.35)) * (1 - outMed);
+    n10.style.transform = `translateY(${(1 - easeOut(pTen)) * 20}px)`;
+    $("cap1").style.opacity = easeOut(prog(t, C.contrib - 0.1, 0.6)) * (1 - outMed);
+    const in90 = easeOut(prog(t, C.decisive - 0.05, 0.7));
+    $("lab2").style.opacity = easeOut(prog(t, C.decisive - 0.15, 0.6));
+    $("n90").style.opacity = in90;
+    $("n90").textContent = Math.round(10 + 80 * easeOut(prog(t, C.decisive - 0.05, 1.1))) + "%";
+    $("n90").style.transform = `translateY(${(1 - in90) * 20}px)`;
+    $("cap2").style.opacity = easeOut(prog(t, C.decisive + 1.0, 0.7));
+    // точки
+    DOTS.forEach((d, i) => {
+      const order = (9 - d.r) * 10 + d.c;            // снизу вверх
+      const pIn = easeOut(prog(t, 0.15 + i * 0.008, 0.5));
+      let fill = "rgba(255,255,255,0.16)", glow = false, s = 0.6 + 0.4 * pIn;
+      if (d.med) {
+        const p = easeOut(prog(t, C.ten - 0.05 + d.c * 0.045, 0.35));
+        fill = p > 0 ? `rgba(216,188,142,${0.16 + 0.84 * p})` : fill;
+        glow = p > 0.5; s *= 1 + 0.18 * Math.sin(Math.PI * p);
+      } else {
+        const p = easeOut(prog(t, C.decisive + (order - 10) * 0.012, 0.4));
+        if (p > 0) fill = `rgba(255,255,255,${0.16 + 0.76 * p})`;
+      }
+      d.el.setAttribute("fill", fill);
+      d.el.setAttribute("filter", glow ? "url(#glow)" : "");
+      d.el.setAttribute("r", 13 * s);
+      d.el.style.opacity = pIn;
+    });
+    const pk = easeOut(prog(t, C.ten + 0.6, 0.6));
+    $("key").style.opacity = pk;
+    $("k2").style.opacity = easeOut(prog(t, C.decisive + 0.4, 0.6));
+    breathe($("scene"), t, C.dur);
+  }
+</script>
+</body></html>

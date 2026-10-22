@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<link rel="stylesheet" href="common.css">
+<style>
+  .card { position: absolute; left: 0; right: 0; top: 700px; text-align: center; }
+  .card .label { justify-content: center; }
+  .card .label::after { content: ""; width: 44px; height: 3px; background: var(--acc); display: block; }
+  .name { margin-top: 30px; font: 600 92px/1.02 "Inter Display"; letter-spacing: -1px; }
+  .sub { margin-top: 14px; font: 300 42px "Inter Display"; color: var(--soft); }
+  .rule { width: 72px; height: 3px; background: var(--acc); margin: 46px auto 40px; }
+  .handle { font: 600 44px "Inter"; letter-spacing: 0.5px; }
+  .theme { margin-top: 14px; font: 500 30px "Inter"; color: var(--soft); }
+</style></head>
+<body>
+<div id="bg"></div>
+<div class="layer" id="scene">
+  <div class="card">
+    <div class="label" id="l1">Сердечно-сосудистый хирург</div>
+    <div class="name" id="l2">Абдурагимов</div>
+    <div class="sub" id="l3">Абдурагим Магомедрасулович</div>
+    <div class="rule" id="l4"></div>
+    <div class="handle" id="l5">@abduragimov_cvs</div>
+    <div class="theme" id="l6">профилактика заболеваний</div>
+  </div>
+</div>
+<script src="common.js"></script>
+<script>
+  function render(t) {
+    // текст появляется после того, как кадр растворился в фон (растворение 0,6 с)
+    ["l1", "l2", "l3", "l4", "l5", "l6"].forEach((id, i) => appear($(id), t, 0.62 + i * 0.09, 0.7, 22));
+    const r = $("l4"); r.style.width = `${72 * easeOut(prog(t, 0.95, 0.6))}px`;
+    breathe($("scene"), t, C.dur);
+  }
+</script>
+</body></html>

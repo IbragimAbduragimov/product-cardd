@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<link rel="stylesheet" href="common.css">
+<style>
+  .ax { font: 500 26px "Inter"; fill: var(--faint); letter-spacing: 1px; }
+  .lb { font: 600 30px "Inter"; }
+  .tag { font: 600 24px "Inter"; letter-spacing: 4px; fill: var(--acc); }
+</style></head>
+<body>
+<div id="bg"></div>
+<div class="layer" id="scene">
+  <div class="hdr" id="hdr">
+    <div class="label">Когда болезнь уже есть</div>
+    <div class="title">Остаётся лечить<br><span class="acc">и сдерживать</span></div>
+  </div>
+  <svg class="layer" width="1080" height="1920" viewBox="0 0 1080 1920">
+    <defs>
+      <clipPath id="clipUntreated"><rect id="cu" x="430" y="560" width="0" height="640"/></clipPath>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <g id="axes">
+      <line x1="110" y1="1170" x2="975" y2="1170" stroke="rgba(255,255,255,0.28)" stroke-width="2"/>
+      <line x1="110" y1="640" x2="110" y2="1170" stroke="rgba(255,255,255,0.28)" stroke-width="2"/>
+      <text x="975" y="1214" text-anchor="end" class="ax">время →</text>
+      <text x="126" y="660" class="ax">тяжесть</text>
+      <!-- уровень здоровья: недостижимый ориентир -->
+      <line x1="110" y1="1126" x2="975" y2="1126" stroke="rgba(255,255,255,0.22)" stroke-width="2" stroke-dasharray="8 10"/>
+      <text x="126" y="1110" class="ax">здоровье</text>
+    </g>
+    <!-- течение болезни до лечения -->
+    <path id="before" d="M 118 1060 C 150 1052, 175 1040, 195 1028 L 212 990 L 228 1022 C 262 1004, 290 990, 312 976 L 328 930 L 344 968 C 372 950, 402 934, 430 920"
+          stroke="var(--alert)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- без лечения: пунктир, быстрее вверх, сильные обострения -->
+    <g clip-path="url(#clipUntreated)">
+      <path id="untreated" d="M 430 920 C 470 900, 500 884, 525 868 L 545 808 L 565 858 C 610 832, 650 810, 690 790 L 712 718 L 734 782 C 790 752, 840 724, 885 700 L 905 628 L 927 690 C 945 680, 958 672, 968 666"
+            stroke="var(--alert)" stroke-opacity="0.55" stroke-width="4" fill="none" stroke-dasharray="12 12" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <text id="lblUntreated" x="968" y="612" text-anchor="end" class="lb" fill="var(--alert)">без лечения</text>
+    <!-- маркер начала лечения -->
+    <g id="marker">
+      <line x1="430" y1="700" x2="430" y2="1170" stroke="var(--acc)" stroke-width="2.5" stroke-dasharray="4 8"/>
+      <circle cx="430" cy="920" r="9" fill="var(--acc)" filter="url(#glow)"/>
+      <text x="430" y="682" text-anchor="middle" class="tag">ЛЕЧЕНИЕ</text>
+    </g>
+    <!-- с лечением: развитие сдержано, обострения слабее -->
+    <path id="treated" d="M 430 920 C 480 912, 520 905, 560 900 L 574 884 L 588 898 C 640 892, 690 886, 740 882 L 752 868 L 764 880 C 820 876, 870 872, 915 868 L 925 858 L 935 866 C 948 864, 958 863, 968 862"
+          stroke="#ffffff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+    <text id="lblTreated" x="968" y="830" text-anchor="end" class="lb" fill="#ffffff">сдерживание</text>
+    <!-- меньше обострений -->
+    <g id="exac">
+      <circle cx="574" cy="884" r="7" fill="#fff"/><circle cx="752" cy="868" r="7" fill="#fff"/><circle cx="925" cy="858" r="7" fill="#fff"/>
+      <circle cx="545" cy="808" r="7" fill="var(--alert)" opacity="0.8"/><circle cx="712" cy="718" r="7" fill="var(--alert)" opacity="0.8"/><circle cx="905" cy="628" r="7" fill="var(--alert)" opacity="0.8"/>
+      <text x="660" y="968" text-anchor="middle" class="lb" fill="var(--acc)">меньше обострений</text>
+    </g>
+  </svg>
+</div>
+<script src="common.js"></script>
+<script>
+  function render(t) {
+    appear($("hdr"), t, C.title - 0.05, 0.7);
+    $("axes").style.opacity = easeOut(prog(t, 0.05, 0.6));
+    draw($("before"), easeInOut(prog(t, 0.35, C.treat - 0.45)));
+    // маркер лечения
+    const pm = easeOut(prog(t, C.treat - 0.1, 0.6));
+    $("marker").style.opacity = pm;
+    // без лечения — проявляется следом (прогноз), с лечением — на «сдерживать»
+    const pu = easeInOut(prog(t, C.treat + 0.25, 1.9));
+    reveal($("cu"), 430, 980, pu);
+    $("lblUntreated").style.opacity = easeOut(prog(t, C.treat + 1.6, 0.6));
+    draw($("treated"), easeInOut(prog(t, C.restrain - 0.2, 1.9)));
+    $("lblTreated").style.opacity = easeOut(prog(t, C.restrain + 1.3, 0.6));
+    const pe = easeOut(prog(t, C.reduce - 0.1, 0.7));
+    $("exac").style.opacity = pe;
+    breathe($("scene"), t, C.dur);
+  }
+</script>
+</body></html>

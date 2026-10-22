@@ -10,3 +10,9 @@ doctor-intro-reels/side_angle_2/build/*.log
 doctor-intro-reels/side_angle_2/output/*master*
 doctor-intro-reels/front_2/build/
 doctor-intro-reels/front_2/output/*master*
+doctor-intro-reels/reel_2/build/*.mkv
+doctor-intro-reels/reel_2/build/*.wav
+doctor-intro-reels/reel_2/build/*.png
+doctor-intro-reels/reel_2/build/*.mp4
+doctor-intro-reels/reel_2/build/*.log
+doctor-intro-reels/reel_2/output/*.mp4

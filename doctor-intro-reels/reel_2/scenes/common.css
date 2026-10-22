@@ -1,0 +1,31 @@
+/* Общий стиль графических сцен: фон в цвет студийной стены, Inter, один акцент. */
+:root {
+  --ink: #ffffff;
+  --soft: rgba(255, 255, 255, 0.76);
+  --faint: rgba(255, 255, 255, 0.34);
+  --dim: rgba(255, 255, 255, 0.16);
+  --acc: #d8bc8e;           /* шампань — единственный акцент */
+  --acc-glow: rgba(216, 188, 142, 0.35);
+  --alert: #e4826f;         /* приглушённый коралл — только «болезнь» */
+}
+html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #2a2b40; }
+body { font-family: "Inter", sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+#bg {
+  position: absolute; inset: 0;
+  /* цвет студийной стены в кадре: (44,45,67) сверху → (41,42,62) → (37,38,56), светлее справа вверху */
+  background:
+    radial-gradient(900px 760px at 86% 10%, rgba(54, 57, 80, 0.8), rgba(54, 57, 80, 0) 72%),
+    linear-gradient(180deg, #2c2d43 0%, #292a3e 50%, #252638 100%);
+}
+.layer { position: absolute; inset: 0; }
+.hdr { position: absolute; left: 92px; top: 284px; width: 900px; }
+.label {
+  font: 600 25px "Inter"; letter-spacing: 5px; text-transform: uppercase; color: var(--acc);
+  display: flex; align-items: center; gap: 18px;
+}
+.label::before { content: ""; width: 44px; height: 3px; background: var(--acc); display: block; }
+.title { margin-top: 22px; font: 600 70px/1.08 "Inter Display"; letter-spacing: -0.6px; }
+.title .acc { color: var(--acc); }
+.small { font: 500 30px "Inter"; color: var(--soft); }
+.tnum { font-feature-settings: "tnum" 1; }
+svg text { font-family: "Inter"; }

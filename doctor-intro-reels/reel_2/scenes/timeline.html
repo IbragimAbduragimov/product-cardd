@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<link rel="stylesheet" href="common.css">
+<style>
+  .lbl { font: 500 30px "Inter"; fill: var(--soft); }
+  .lbl-acc { font: 600 24px "Inter"; letter-spacing: 4px; fill: var(--acc); }
+  .lbl-alert { font: 600 34px "Inter Display"; fill: var(--alert); }
+</style></head>
+<body>
+<div id="bg"></div>
+<div class="layer" id="scene">
+  <div class="hdr" id="hdr">
+    <div class="label">Из практики</div>
+    <div class="title">Здоровье определяется<br><span class="acc">задолго до болезни</span></div>
+  </div>
+  <svg class="layer" width="1080" height="1920" viewBox="0 0 1080 1920">
+    <defs>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <linearGradient id="lineGrad" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+        <stop offset="0.82" stop-color="#ffffff" stop-opacity="0.9"/>
+        <stop offset="1" stop-color="#e4826f" stop-opacity="1"/>
+      </linearGradient>
+    </defs>
+    <!-- годы: засечки вдоль линии -->
+    <g id="ticks"></g>
+    <!-- основная линия времени -->
+    <path id="line" d="M 112 870 L 905 870" stroke="url(#lineGrad)" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <!-- старт: что делает человек -->
+    <g id="start">
+      <circle cx="112" cy="870" r="11" fill="#ffffff"/>
+      <text x="96" y="942" class="lbl">что делает человек</text>
+    </g>
+    <!-- скобка «годы» -->
+    <g id="bracket">
+      <path id="br" d="M 130 800 L 130 782 L 840 782 L 840 800" stroke="var(--acc)" stroke-width="3" fill="none" stroke-linejoin="round"/>
+      <text x="485" y="750" text-anchor="middle" class="lbl-acc">ГОДЫ</text>
+    </g>
+    <!-- болезнь -->
+    <g id="disease">
+      <circle id="pulse" cx="905" cy="870" r="14" fill="none" stroke="var(--alert)" stroke-width="3" opacity="0.6"/>
+      <circle cx="905" cy="870" r="13" fill="var(--alert)" filter="url(#glow)"/>
+      <text x="905" y="946" text-anchor="middle" class="lbl-alert">болезнь</text>
+    </g>
+  </svg>
+</div>
+<script src="common.js"></script>
+<script>
+  // засечки «лет» вдоль линии
+  const ticks = $("ticks"), XS = [];
+  for (let x = 160; x <= 820; x += 44) {
+    XS.push(x);
+    const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    l.setAttribute("x1", x); l.setAttribute("x2", x); l.setAttribute("y1", 856); l.setAttribute("y2", 884);
+    l.setAttribute("stroke", "rgba(255,255,255,0.42)"); l.setAttribute("stroke-width", "2");
+    ticks.appendChild(l);
+  }
+  function render(t) {
+    appear($("hdr"), t, C.title - 0.05, 0.7);
+    const d0 = C.draw - 0.55, dDur = Math.max(1.4, C.disease - d0 - 0.15);
+    const p = easeInOut(prog(t, d0, dDur));
+    draw($("line"), p);
+    const head = 112 + (905 - 112) * p;
+    [...ticks.children].forEach((l, i) => { l.style.opacity = clamp((head - XS[i]) / 40); });
+    $("start").style.opacity = easeOut(prog(t, d0, 0.5));
+    $("start").querySelector("text").style.opacity = easeOut(prog(t, C.did - 0.2, 0.5));
+    const pb = easeOut(prog(t, C.before - 0.1, 0.7));
+    draw($("br"), pb); $("bracket").querySelector("text").style.opacity = pb;
+    const pd = easeOut(prog(t, C.disease - 0.1, 0.5));
+    $("disease").style.opacity = pd;
+    $("disease").style.transform = `scale(${0.7 + 0.3 * pd})`; $("disease").style.transformOrigin = "905px 870px";
+    const ps = prog(t, C.disease, 1.1);
+    $("pulse").setAttribute("r", 14 + 30 * easeOut(ps)); $("pulse").style.opacity = 0.6 * (1 - ps) * (ps > 0 ? 1 : 0);
+    breathe($("scene"), t, C.dur);
+  }
+</script>
+</body></html>
