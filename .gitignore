@@ -3,3 +3,8 @@ doctor-intro-reels/build/*.mov
 doctor-intro-reels/build/*.png
 doctor-intro-reels/build/*.log
 __pycache__/
+doctor-intro-reels/sources/
+doctor-intro-reels/side_angle_2/build/*.mp4
+doctor-intro-reels/side_angle_2/build/*.png
+doctor-intro-reels/side_angle_2/build/*.log
+doctor-intro-reels/side_angle_2/output/*master*
