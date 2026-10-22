@@ -1,0 +1,5 @@
+doctor-intro-reels/build/*.wav
+doctor-intro-reels/build/*.mov
+doctor-intro-reels/build/*.png
+doctor-intro-reels/build/*.log
+__pycache__/
