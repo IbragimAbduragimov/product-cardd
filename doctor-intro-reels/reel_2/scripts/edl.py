@@ -121,7 +121,7 @@ def build_shots():
     shot("front", t[0], t[1], zoom=(1.0, 1.0))
     t = span("insight")
     mid = out_time("front", (ISL[4][1] + ISL[5][0]) / 2)          # пауза перед «здоровье человека»
-    shot("photo", t[0], mid, src="operating_room", kb=(1.04, 1.10), focus=(0.62, 0.42))
+    shot("front", t[0], mid, zoom=(1.32, 1.32))
     shot("scene", mid, t[1], scene="timeline")
     t = span("patients")
     shot("side", t[0], t[1], src_a=clip("patients")["a"])
@@ -150,7 +150,7 @@ def build_shots():
     t = span("mission")
     shot("front", t[0], t[1], zoom=(1.66, 1.66))
     t = span("share")
-    shot("photo", t[0], t[1], src="lecture_heart", kb=(1.03, 1.09), focus=(0.47, 0.40))
+    shot("front", t[0], t[1], zoom=(1.32, 1.32))
     t = span("cta")
     shot("front", t[0], TOTAL - END_CARD + 0.6, zoom=(1.0, 1.06))
     shot("endcard", TOTAL - END_CARD, TOTAL)

@@ -288,6 +288,26 @@ def top_scrim(strength):
 SCRIM = top_scrim(1.0)
 
 
+def watermark():
+    """Водяной знак «abduragimov_cvs» как на референсе: антиква с широкой разрядкой, без подложки."""
+    f = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf", 36)
+    text, tracking = "abduragimov_cvs", 7.3
+    d = ImageDraw.Draw(Image.new("RGBA", (10, 10)))
+    w = int(sum(d.textlength(c, font=f) for c in text) + tracking * (len(text) - 1)) + 4
+    top = f.getbbox(text)[1]
+    img = Image.new("RGBA", (w, 48), (0, 0, 0, 0))
+    dd = ImageDraw.Draw(img)
+    x = 0
+    for c in text:
+        dd.text((x, -top), c, font=f, fill=(255, 255, 255, 236))
+        x += dd.textlength(c, font=f) + tracking
+    return img
+
+
+WATERMARK = watermark()
+WATERMARK_XY = (92, 172)      # левый верхний угол, выше заголовков (они начинаются с y=262)
+
+
 def parse_marked(text):
     out, hl = [], False
     for tok in text.split(" "):
@@ -355,17 +375,17 @@ def build_overlay():
             ("label", "Два условия", oc["cond_label"]),
             ("text", "Знания", oc["cond_know"], 70, "InterDisplay-SemiBold", W_),
             ("text", "+ готовность им следовать", oc["cond_ready"], 56, "InterDisplay-SemiBold", ACCENT)]),
-        Heading(shot_end("photo", oc["share"]), [
+        Heading(shot_end("front", oc["share"]), [
             ("label", "Цель блога", oc["share"]),
-            ("text", "Профессиональные знания", oc["share"] + 0.1, 60, "InterDisplay-SemiBold", W_),
-            ("text", "о профилактике болезней", oc["share"] + 0.4, 60, "InterDisplay-SemiBold", ACCENT)],
-            scrim=0.6, panel=True),
+            ("text", "Профессиональные знания", oc["share"] + 0.1, 46, "InterDisplay-SemiBold", W_),
+            ("text", "о профилактике болезней", oc["share"] + 0.4, 46, "InterDisplay-SemiBold", ACCENT)]),
     ]
     subs = [(e["s"], min(e["e"], end_t0), subtitle_img(e["text"])) for e in CUES["subs"]]
     return heads, subs
 
 
 def draw_overlay(canvas, t, heads, subs):
+    canvas.alpha_composite(WATERMARK, WATERMARK_XY)
     for h in heads:
         if h.scrim and h.t_in - 0.3 <= t <= h.t_out:
             a = min(ease_out((t - h.t_in + 0.3) / 0.5), ease_out((h.t_out - t) / 0.35))
