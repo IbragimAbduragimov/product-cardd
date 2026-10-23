@@ -115,6 +115,9 @@ const V = {
       <div class="t play" data-w="580" style="left:72px; top:300px; font-weight:900; font-size:200px"><span style="font-size:.46em; font-style:italic; font-weight:400; color:var(--soft)">Всего&nbsp;</span>10%<span class="acc" style="font-style:italic; font-weight:700; font-size:1.08em">?!</span></div>` },
   20: { z: "c", base: "base2", front: `
       <div class="t mont" data-w="800" data-center style="top:398px; font-weight:900; font-size:110px; letter-spacing:-.02em">Всего <span class="mark">10%</span><span style="font-size:1.1em">?!</span></div>` },
+  // № 21 — № 17 в прежнем виде (до правок по разметке), только без «!»: тот же кегль, по центру.
+  21: { z: "b", base: "base2", front: `
+      <div class="t unb" data-center style="top:438px; font-weight:900; font-size:121.34px; letter-spacing:-.02em">Всего 10%<span class="acc">?</span></div>` },
 };
 window.setVariant = async (n) => {
   const v = V[n];
@@ -133,10 +136,12 @@ window.setVariant = async (n) => {
 };
 // Кегль строки — под заданную ширину; при data-center строка ставится по центру кадра.
 function fit() {
-  document.querySelectorAll("[data-w]").forEach(el => {
+  document.querySelectorAll("[data-w], [data-center]").forEach(el => {
     el.style.width = "max-content";
-    const w = el.getBoundingClientRect().width;
-    el.style.fontSize = parseFloat(getComputedStyle(el).fontSize) * (+el.dataset.w) / w + "px";
+    if (el.dataset.w) {
+      const w = el.getBoundingClientRect().width;
+      el.style.fontSize = parseFloat(getComputedStyle(el).fontSize) * (+el.dataset.w) / w + "px";
+    }
     if ("center" in el.dataset) el.style.left = (1080 - el.getBoundingClientRect().width) / 2 + "px";
   });
 }

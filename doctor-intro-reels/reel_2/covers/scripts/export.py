@@ -10,7 +10,7 @@ OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
 FONT = ImageFont.truetype("/usr/share/fonts/opentype/inter/Inter-SemiBold.otf", 30)
 COLS, TILE_W, GAP, LABEL = 5, 300, 16, 56
 GRID_CROP = (0, 240, 1080, 1680)
-SERIES = {"1-15": range(1, 16), "16-20": range(16, 21)}   # 16–20: «Всего 10%?!» в одну строку, № 17 — «ВСЕГО 10%?»
+SERIES = {"1-15": range(1, 16), "16-21": range(16, 22)}   # 16–21: «Всего 10%?!» в одну строку и правки
 
 
 def sheet(numbers, images, crop, name):
