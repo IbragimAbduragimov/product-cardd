@@ -44,7 +44,7 @@ python3 scripts/base_frame.py                  # кадр из 4K-исходни
 python3 scripts/matte.py                       # маска фигуры (RVM) → base/person_z*.png
 NODE_PATH=$(npm root -g) node scripts/render_covers.js [номера]   # cover.html → output/cover_NN.png
 python3 scripts/export.py                      # JPG + обзоры
-node scripts/measure_text.js <папка> [номера] && python3 scripts/qc_text.py <папка>   # проверка раскладки
+NODE_PATH=$(npm root -g) node scripts/measure_text.js <папка> [номера] && python3 scripts/qc_text.py <папка>  # проверка
 ```
 `qc_text.py` для каждого варианта печатает границы текста, зазор до картины и до фигуры
 (или долю текста, скрытую фигурой) и предупреждает, если текст выходит из зоны сетки профиля.
