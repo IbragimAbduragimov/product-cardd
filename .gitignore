@@ -16,6 +16,6 @@ doctor-intro-reels/reel_2/build/*.png
 doctor-intro-reels/reel_2/build/*.mp4
 doctor-intro-reels/reel_2/build/*.log
 doctor-intro-reels/reel_2/output/*.mp4
-doctor-intro-reels/reel_2/covers/base/frame_4k.png
-doctor-intro-reels/reel_2/covers/base/alpha_*.png
+doctor-intro-reels/reel_2/covers/base*/frame_4k.png
+doctor-intro-reels/reel_2/covers/base*/alpha_*.png
 doctor-intro-reels/reel_2/covers/output/*.png

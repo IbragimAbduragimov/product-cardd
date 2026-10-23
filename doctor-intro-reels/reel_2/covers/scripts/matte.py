@@ -1,9 +1,14 @@
 """Маска фигуры врача на кадре обложки (RVM ResNet50) — для текста «за спиной».
 
 Нейросеть прогоняется по полсекунды кадров до выбранного (рекуррентная модель уточняет
-края по движению), маска берётся с кадра t = 99,80 с. Для трёх крупностей кадра.
-Результат — person_z*.png: фон обложки с маской в альфа-канале (слой поверх текста).
+края по движению), маска берётся с кадра из <папка>/frame.json (его выбирает base_frame.py).
+Для трёх крупностей кадра. Результат — person_z*.png: фон обложки с маской в альфа-канале
+(слой поверх текста).
+
+python3 scripts/matte.py [--out base2]
 """
+import argparse
+import json
 import os
 import sys
 
@@ -17,8 +22,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(REEL), "side_angle_2", "scripts"
 from assemble import FPS, Poster, front_pipe, zoom_crop  # noqa: E402
 import process as P  # noqa: E402  (Matter: RVM + guided filter)
 
-OUT = os.path.join(os.path.dirname(HERE), "base")
-T_START, T_PICK = 99.30, 99.80
+ap = argparse.ArgumentParser()
+ap.add_argument("--out", default="base")
+OUT = os.path.join(os.path.dirname(HERE), ap.parse_args().out)
+T_PICK = json.load(open(os.path.join(OUT, "frame.json")))["t"]
+T_START = T_PICK - 0.5
 
 ref = front_pipe(40.0, 0.05).get(0)
 poster = Poster(ref)

@@ -103,24 +103,26 @@ const V = {
   15: { z: "a", front: `
       <div class="t inter" style="left:80px; top:340px; font-weight:600; font-size:96px; color:var(--soft)">Для чего</div>
       <div class="t inter" style="left:74px; top:450px; font-weight:800; font-size:104px; letter-spacing:-3px">этот блог<span class="acc" style="font-size:130px">?</span></div>` },
-  // «Всего 10%?!» в одну строку. data-w — ширина строки (кегль подбирается), data-center — по центру.
-  16: { z: "c", person: true, behind: `
+  // «Всего 10%?!» в одну строку, кадр со скриншота заказчика (base2: 99,70 с, рот закрыт).
+  // data-w — ширина строки (кегль подбирается), data-center — по центру.
+  16: { z: "c", base: "base2", person: true, behind: `
       <div class="t inter" data-w="944" data-center style="top:421px; font-weight:900; font-size:170px; letter-spacing:-.035em">Всего 10%<span class="acc" style="font-size:1.1em">?!</span></div>` },
-  17: { z: "b", front: `
+  17: { z: "b", base: "base2", front: `
       <div class="t unb" data-w="944" data-center style="top:438px; font-weight:900; font-size:110px; letter-spacing:-.02em">Всего 10%<span class="acc">?!</span></div>` },
-  18: { z: "b", person: true, behind: `
+  18: { z: "b", base: "base2", person: true, behind: `
       <div class="t osw" data-w="944" data-center style="top:432px; font-weight:700; font-size:180px; letter-spacing:.01em">ВСЕГО 10%<span class="coral" style="font-size:1.06em">?!</span></div>` },
-  19: { z: "a", front: `
+  19: { z: "a", base: "base2", front: `
       <div class="t play" data-w="580" style="left:72px; top:300px; font-weight:900; font-size:200px"><span style="font-size:.46em; font-style:italic; font-weight:400; color:var(--soft)">Всего&nbsp;</span>10%<span class="acc" style="font-style:italic; font-weight:700; font-size:1.08em">?!</span></div>` },
-  20: { z: "c", front: `
+  20: { z: "c", base: "base2", front: `
       <div class="t mont" data-w="800" data-center style="top:398px; font-weight:900; font-size:110px; letter-spacing:-.02em">Всего <span class="mark">10%</span><span style="font-size:1.1em">?!</span></div>` },
 };
 window.setVariant = async (n) => {
   const v = V[n];
-  document.getElementById("bg").src = `base/frame_1080_z${Z[v.z]}.png`;
+  const dir = v.base || "base";                       // base — кадр 99,80 с (№ 1–15)
+  document.getElementById("bg").src = `${dir}/frame_1080_z${Z[v.z]}.png`;
   const p = document.getElementById("person");
   p.style.display = v.person ? "block" : "none";
-  if (v.person) p.src = `base/person_z${Z[v.z]}.png`;
+  if (v.person) p.src = `${dir}/person_z${Z[v.z]}.png`;
   document.getElementById("behind").innerHTML = v.behind || "";
   document.getElementById("front").innerHTML = (v.shade ? '<div class="shade"></div>' : "") + (v.front || "");
   await Promise.all([...document.images].filter(i => i.style.display !== "none")

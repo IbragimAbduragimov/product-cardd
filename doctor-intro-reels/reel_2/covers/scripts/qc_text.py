@@ -11,23 +11,26 @@ import sys
 
 import numpy as np
 from PIL import Image
-from scipy.ndimage import distance_transform_edt
+from scipy.ndimage import distance_transform_edt, label
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ZOOM = {"a": "1.00", "b": "1.15", "c": "1.30"}
 NAVY = np.array([38, 42, 72])
 
 html = open(os.path.join(ROOT, "cover.html"), encoding="utf-8").read()
-zoom_of = {int(n): ZOOM[z] for n, z in re.findall(r'\n  (\d+): \{ z: "([abc])"', html)}
+variants = re.findall(r'\n  (\d+): \{ z: "([abc])"(?:, base: "(\w+)")?', html)
+zoom_of = {int(n): (b or "base", ZOOM[z]) for n, z, b in variants}       # номер → (папка кадра, крупность)
 
 maps = {}
-for z in set(zoom_of.values()):
-    fr = np.asarray(Image.open(os.path.join(ROOT, "base", f"frame_1080_z{z}.png")).convert("RGB")).astype(int)
-    person = np.asarray(Image.open(os.path.join(ROOT, "base", f"alpha_z{z}.png"))) > 128
+for base, z in set(zoom_of.values()):
+    fr = np.asarray(Image.open(os.path.join(ROOT, base, f"frame_1080_z{z}.png")).convert("RGB")).astype(int)
+    person = np.asarray(Image.open(os.path.join(ROOT, base, f"alpha_z{z}.png"))) > 128
     poster = (np.abs(fr - NAVY).sum(2) > 90) & ~person
     poster[900:] = False
     poster[:, :540] = False
-    maps[z] = (person, distance_transform_edt(~person), distance_transform_edt(~poster))
+    lab, _ = label(poster)
+    poster = lab == np.bincount(lab.ravel())[1:].argmax() + 1        # только картина, без пикселей волос по краю маски
+    maps[base, z] = (person, distance_transform_edt(~person), distance_transform_edt(~poster))
 
 folder = sys.argv[1]
 only = [int(x) for x in sys.argv[2:]]
