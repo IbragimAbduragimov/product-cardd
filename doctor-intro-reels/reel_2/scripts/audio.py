@@ -1,8 +1,9 @@
 """Звук ролика: только голос врача + точечные звуковые акценты. Музыки нет.
 
-1. Шумоподавление каждого дубля по профилю шума из его же пауз (мягкое, ≤12 дБ).
-2. Боковой дубль подгоняется к фронтальному: громкость по речи и тембр — FIR-эквалайзер
-   с линейной фазой (не сдвигает звук во времени). Тембр фронта остаётся натуральным.
+1. Шумоподавление по профилю шума из пауз (мягкое, ≤12 дБ).
+2. Голос — только фронтальный дубль (петличный микрофон), единый во всём ролике; на боковых
+   планах видео подгоняется под этот звук (retime.py). Если в монтаже снова появится звук
+   бокового дубля, он будет подогнан к фронту по громкости и тембру (FIR, линейная фаза).
 3. Сборка по монтажному листу: равномощностные кроссфейды 40 мс на стыках (всегда в паузах).
 4. Общая лёгкая обработка: срез ниже 70 Гц, чуть меньше «бубнения», чуть больше разборчивости,
    мягкая компрессия.
@@ -201,18 +202,18 @@ def sfx_track(cues):
 def main():
     cues = json.load(open(os.path.join(BUILD, "cues.json")))
     tracks = {}
-    for src in ("front", "side"):
+    used = sorted({c["src"] for c in CLIPS})           # сейчас только фронт — единый голос
+    for src in used:
         x = load(src)
-        y = denoise(x, cut(x, NOISE[src]))
-        tracks[src] = y
-    # боковой дубль → громкость и тембр фронта
-    f_sp, s_sp = cut(tracks["front"], SPEECH["front"]), cut(tracks["side"], SPEECH["side"])
-    taps, curve = match_eq(s_sp, f_sp)
-    tracks["side"] = fir(tracks["side"], taps)
-    gain = rms_db(f_sp) - rms_db(cut(tracks["side"], SPEECH["side"]))
-    tracks["side"] *= 10 ** (gain / 20)
-    print(f"бок → фронт: усиление {gain:+.1f} дБ; тембр (Гц: дБ): "
-          + ", ".join(f"{k}:{v:+.1f}" for k, v in curve.items() if 60 <= k <= 12000))
+        tracks[src] = denoise(x, cut(x, NOISE[src]))
+    if "side" in tracks:                                # боковой дубль → громкость и тембр фронта
+        f_sp, s_sp = cut(tracks["front"], SPEECH["front"]), cut(tracks["side"], SPEECH["side"])
+        taps, curve = match_eq(s_sp, f_sp)
+        tracks["side"] = fir(tracks["side"], taps)
+        gain = rms_db(f_sp) - rms_db(cut(tracks["side"], SPEECH["side"]))
+        tracks["side"] *= 10 ** (gain / 20)
+        print(f"бок → фронт: усиление {gain:+.1f} дБ")
+    print("источники звука:", ", ".join(used))
     # сборка по монтажному листу с кроссфейдами 40 мс
     n = int((TOTAL + 0.5) * SR)
     voice = np.zeros(n)

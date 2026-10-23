@@ -37,6 +37,20 @@ TONEMAP = ("zscale=tin=arib-std-b67:min=bt2020nc:pin=bt2020:rin=tv:t=linear:npl=
            "zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:dither=error_diffusion,"
            "format=gbrp,format=rgb24")
 rng = np.random.default_rng(5)
+# боковые планы: начало кадров side_<фраза>.mkv во времени бокового дубля и карта «фронт → бок»
+SIDE_MKV_START = {"patients": 16.105, "realize": 40.395}
+RETIME = {k: tuple(np.array(v) for v in json.load(open(os.path.join(BUILD, f"retime_{k}.json"))).values())
+          for k in SIDE_MKV_START}
+
+
+def side_time(tag, f):
+    """Время бокового дубля для момента f фронтального звука (за краями — сдвиг 1:1)."""
+    ft, st = RETIME[tag]
+    if f <= ft[0]:
+        return st[0] + (f - ft[0])
+    if f >= ft[-1]:
+        return st[-1] + (f - ft[-1])
+    return float(np.interp(f, ft, st))
 
 
 def ease_io(x):
@@ -359,11 +373,6 @@ def build_overlay():
 
     W_ = (255, 255, 255)
     heads = [
-        Heading(shot_end("front", oc["name"]), [
-            ("label", "Врач-ординатор", oc["name"]),
-            ("text", "Абдурагимов", oc["name"] + 0.08, 86, "InterDisplay-SemiBold", W_),
-            ("text", "Абдурагим Магомедрасулович", oc["name"] + 0.16, 40, "InterDisplay-Light", SOFT),
-            ("text", "Сердечно-сосудистый хирург", oc["surgeon"], 34, "Inter-Medium", ACCENT)]),
         Heading(shot_end("side", oc["handle"]), [
             ("label", "Мой блог", oc["handle"]),
             ("text", "@abduragimov_cvs", oc["handle"] + 0.1, 56, "Inter-SemiBold", W_)]),
@@ -380,7 +389,15 @@ def build_overlay():
             ("text", "Профессиональные знания", oc["share"] + 0.1, 46, "InterDisplay-SemiBold", W_),
             ("text", "о профилактике болезней", oc["share"] + 0.4, 46, "InterDisplay-SemiBold", ACCENT)]),
     ]
-    subs = [(e["s"], min(e["e"], end_t0), subtitle_img(e["text"])) for e in CUES["subs"]]
+    # полных субтитров нет — только короткие подписи на ключевых моментах (до конца своего плана)
+    captions = [("cap_hook", "Для чего создан *мой блог*"),
+                ("cap_nocure", "О полном излечении *речи уже не идёт*"),
+                ("cap_cta", "Пересылайте тем, кому желаете *здоровое будущее*")]
+    subs = []
+    for key, text in captions:
+        c0, c1 = oc[key]
+        shot_t1 = next(x["t1"] for x in shots if x["t0"] <= c0 < x["t1"])
+        subs.append((c0, min(c1, shot_t1, end_t0), subtitle_img(text)))
     return heads, subs
 
 
@@ -395,7 +412,7 @@ def draw_overlay(canvas, t, heads, subs):
         h.draw(canvas, t)
     for s0, s1, img in subs:
         if s0 <= t < s1:
-            a = min(1.0, (t - s0) / 0.12, (s1 - t) / 0.10)
+            a = min(1.0, (t - s0) / 0.25, (s1 - t) / 0.2)
             dy = int((1 - ease_out((t - s0) / 0.18)) * 8)
             arr = np.array(img)
             arr[..., 3] = (arr[..., 3] * a).astype(np.uint8)
@@ -428,8 +445,7 @@ class Renderer:
                 sa = self.front_src_time(shot, shot["t0"])
                 self.readers[key] = front_pipe(sa, shot["t1"] - shot["t0"] + 0.3)
             elif k == "side":
-                tag = next(c["tag"] for c in self.clips if c["src"] == "side" and abs(c["out"] - shot["t0"]) < 0.02)
-                self.readers[key] = file_pipe(os.path.join(BUILD, f"side_{tag}.mkv"))
+                self.readers[key] = file_pipe(os.path.join(BUILD, f"side_{shot['tag']}.mkv"))
             elif k in ("scene", "endcard"):
                 name = shot.get("scene", "endcard")
                 self.readers[key] = file_pipe(os.path.join(BUILD, f"scene_{name}.mkv"))
@@ -451,8 +467,9 @@ class Renderer:
             z = z0 + (z1 - z0) * ease_io(p)
             fr = self.poster.composite(fr, dof=max(0.0, z - 1.0) * 5.0)
             return zoom_crop(fr, z, smooth=abs(z1 - z0) > 1e-3)
-        if k == "side":
-            return self.reader(s).get(int((t - s["t0"]) * 30000 / 1001 + 1e-6))
+        if k == "side":                  # кадр бока, совпадающий по губам со звуком фронта
+            st = side_time(s["tag"], self.front_src_time(s, t))
+            return self.reader(s).get(int(round((st - SIDE_MKV_START[s["tag"]]) * 30000 / 1001)))
         if k in ("scene", "endcard"):
             fr = self.reader(s).get(int(round((t - s["t0"]) * FPS))).astype(np.int16)
             noise = rng.normal(0, 1.5, (H // 2, W // 2)).astype(np.float32)
