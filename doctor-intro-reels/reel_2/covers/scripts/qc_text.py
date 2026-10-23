@@ -50,5 +50,5 @@ for path in sorted(glob.glob(os.path.join(folder, "text_*_*.png"))):
         line += f" | до фигуры {d_person[ink].min():4.0f}"
     else:
         line += f" | скрыто фигурой {100 * (ink & person).sum() / ink.sum():4.1f} %"
-    grid_ok = ys.min() >= 262 and ys.max() <= 1500 and xs.min() >= 40 and xs.max() <= 1040
+    grid_ok = ys.min() >= 262 and ys.max() <= 1500 and xs.min() >= 24 and xs.max() <= 1056   # по ширине сетка не режет
     print(line + ("" if grid_ok else "  ⚠ вне безопасной зоны"))
