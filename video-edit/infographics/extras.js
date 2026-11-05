@@ -23,8 +23,8 @@ const I={
 const ic=(k,s,col)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" style="color:${col};flex:none">${I[k]}</svg>`;
 const BLUE='#4C86FF',ORANGE='#FF9433',GREEN='#3CC46B',RED='#FF5A5A';
 const SC=[ // [in, out, renderer(t, enterAlpha)]
- [1.45,5.25,hook],[21.55,31.75,lifeList],[31.90,41.75,habits],   // removed by request: envGroups 46.40–53.70, control 54.00–59.95
- [60.30,68.95,stress],[73.75,80.70,fate],[81.00,93.30,family],[111.25,116.60,finale]];
+ [1.45,5.25,hook],[21.55,31.75,lifeList],[31.90,41.75,habits],[46.40,53.70,envGroups],   // removed: control 54.00–59.95
+ [60.30,68.95,stress],[73.75,80.70,fate],[81.00,93.30,family],[111.25,114.00,finale]   /* ends before the template's handle starts moving (front 115.0) */];
 function A(t,t0,d=0.45){return ease((t-t0)/d);}
 function item(a,html,extra=''){return `<div style="opacity:${a};transform:translateY(${(1-a)*22}px);${extra}">${html}</div>`;}
 const panel=(inner,w=590)=>`<div style="position:absolute;left:44px;top:92px;width:${w}px;padding:28px 30px 24px;border-radius:30px;box-sizing:border-box;
@@ -76,8 +76,8 @@ function family(t){return panel(tag('Семейная история',GREEN)+
   item(A(t,90.80),`<div style="display:flex;align-items:center;gap:12px;margin-top:14px;font-size:23px;font-weight:700">${ic('shield',30,GREEN)}Больше внимания профилактике</div>`));}
 function finale(t){return `<div class=sh style="position:absolute;left:56px;top:150px;width:620px">
   ${item(A(t,111.35),`<div style="display:flex;align-items:center;gap:12px;font-size:32px;font-weight:700;opacity:.85">${ic('shield',36,'#fff')}Медицина подстрахует</div>`)}
-  ${item(A(t,113.15),`<div style="font-size:30px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:26px;opacity:.9">но фундамент закладываете</div>`)}
-  ${item(A(t,115.05,0.35),`<div style="font-size:150px;font-weight:900;line-height:.95;color:${BLUE};transform:scale(${0.85+0.15*back(A(t,115.05,0.5))});transform-origin:left">ВЫ</div>`)}</div>`;}
+  ${item(A(t,113.15),`<div style="font-size:44px;font-weight:900;line-height:1.1;margin-top:22px">но фундамент<br>закладываете <span style=\"color:${BLUE}\">вы</span></div>`)}
+  </div>`;}
 function render(t){let h='';
  for(const [a,b,fn] of SC){if(t<a-0.01||t>b+0.6)continue; const v=ease((t-a)/0.4)*(1-ease((t-b)/0.5)); if(v<=0.001)continue;
   h+=`<div style="position:absolute;inset:0;opacity:${v};transform:translateY(${(1-ease((t-a)/0.5))*16}px)">${fn(t)}</div>`;}

@@ -1,4 +1,4 @@
-"""Montage v2 (smooth zooms only): front camera as base + audio, two cuts to the side camera, punch-ins and slow zooms.
+"""Montage v8 (smooth ~4 s moves, start punch-in, strong push on 'именно вы'): front camera as base + audio, two cuts to the side camera, punch-ins and slow zooms.
 Times are FRONT-camera seconds; all cuts sit in pauses between phrases."""
 import cv2, numpy as np, subprocess, sys
 sys.path.insert(0,'work'); from cleanbg import ENC
@@ -12,11 +12,14 @@ BODY={'F':(545,1000),'S':(600,1100)}   # upper-body centres for gentle pushes
 def ease(u): u=min(max(u,0),1); return u*u*(3-2*u)
 # Camera shots: (start, end, cam, [(t, zoom), ...]) - zoom is continuous inside a shot and eased
 # (zero speed at every keyframe), so moves are slow and gentle; jumps happen only at camera cuts.
-SHOTS=[(T0,   35.20,'F',[(T0,1.00),(15.30,1.09),(25.50,1.16),(35.20,1.10)]),
-       (35.20,47.90,'S',[(35.20,1.00),(47.90,1.08)]),
-       (47.90,88.30,'F',[(47.90,1.14),(60.00,1.00),(69.00,1.08),(77.60,1.16),(88.30,1.06)]),
-       (88.30,99.90,'S',[(88.30,1.08),(99.90,1.00)]),
-       (99.90,T1,   'F',[(99.90,1.00),(110.00,1.10),(T1,1.15)])]
+SHOTS=[(T0,   35.20,'F',[(T0,1.00),(1.85,1.12),            # quick punch-in at the very start
+                          (6.0,1.12),(10.0,1.05),(14.3,1.05),(18.3,1.17),(24.0,1.17),(28.0,1.06)]),
+       (35.20,47.90,'S',[(35.20,1.00),(39.5,1.09),(43.5,1.09),(47.90,1.03)]),
+       (47.90,88.30,'F',[(47.90,1.14),(52.5,1.02),(57.5,1.02),(61.5,1.12),(66.0,1.12),(70.0,1.04),
+                          (74.0,1.04),(78.0,1.15),(83.0,1.15),(88.30,1.08)]),
+       (88.30,99.90,'S',[(88.30,1.09),(92.5,1.00),(96.0,1.00),(99.90,1.06)]),
+       (99.90,T1,   'F',[(99.90,1.00),(104.0,1.10),(110.0,1.10),(113.0,1.14),(114.55,1.14),
+                          (115.45,1.40),(T1,1.42)])]           # strong push-in on "именно вы"
 def params(t):
     for a,b,cam,kf in SHOTS:
         if a<=t<b or (b==T1 and t>=a):

@@ -8,6 +8,10 @@ for d in dirs:
         if f.endswith('.png'): have.setdefault(int(f[:5]),[]).append(os.path.join(d,f))
 cmd=['ffmpeg','-v','error','-y','-f','rawvideo','-pix_fmt','bgr24','-s','1080x1920','-r','30','-i','-','-i',src,
      '-map','0:v','-map','1:a','-c:a','copy',*[x for x in ENC if x not in ('-c:a','aac','-b:a','192k')],'-shortest',out]
+
+if os.environ.get('HQ'):   # high-quality intermediate (e.g. before the ending template re-encodes)
+    cmd=['ffmpeg','-v','error','-y','-f','rawvideo','-pix_fmt','bgr24','-s','1080x1920','-r','30','-i','-','-i',src,
+         '-map','0:v','-map','1:a','-c:a','copy','-c:v','libx264','-preset','slow','-crf','12','-tune','film','-pix_fmt','yuv420p','-shortest',out]
 p=subprocess.Popen(cmd,stdin=subprocess.PIPE); cap=cv2.VideoCapture(src); i=0
 while True:
     ok,f=cap.read()

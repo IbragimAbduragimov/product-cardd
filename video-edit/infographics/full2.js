@@ -4,7 +4,7 @@
 const CX=330,CY=350,R=270,r=112;
 const REVEAL={life:14.35,env:42.30,her:69.90};
 // appearance windows [in, out]
-const WIN=[[5.45,21.00],[41.95,50.00],[69.55,73.60],[95.55,109.00]];   // env/her shorter: info cards follow
+const WIN=[[5.45,21.00],[41.95,46.20],[69.55,73.60],[95.55,109.00]];   // env/her shorter: info cards follow
 const FOCUS2=[[100.95,'life'],[104.40,'env'],[107.80,'her']];        // finale: highlight on each word
 const FINAL=95.55;
 function V(t){let v=0;for(const [a,b] of WIN)v=Math.max(v,ease((t-a)/0.45)*(1-ease((t-b)/0.5)));return v;}
