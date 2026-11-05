@@ -8,7 +8,7 @@ start=int(sys.argv[1]); count=int(sys.argv[2]); out=sys.argv[3]
 OW,OH=1080,1920
 # crop window in stabilized reference coords (720x1280): x 20..690, bottom at y=1060 (floor hidden);
 # rows above y=0 do not exist in the source and are filled with backdrop blue.
-X0,CWID,YBOT=20,670,1060
+X0,CWID,YBOT=35,600,1060
 S=OW/CWID; Y0=YBOT-OH/S
 A=np.array([[S,0,-S*X0],[0,S,-S*Y0],[0,0,1]])
 T=np.load('work/T.npy').reshape(-1,6)

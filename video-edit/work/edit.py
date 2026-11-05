@@ -2,20 +2,20 @@
 Times are FRONT-camera seconds; all cuts sit in pauses between phrases."""
 import cv2, numpy as np, subprocess, sys
 sys.path.insert(0,'work'); from cleanbg import ENC
-FRONT='out/front_final.mp4'; SIDE='out/side_final.mp4'; AUDIO=sys.argv[2] if len(sys.argv)>2 else 'audio/edit_audio.wav'
+FRONT='out/front_final.mp4'; SIDE='out/side_tight.mp4'; AUDIO=sys.argv[2] if len(sys.argv)>2 else 'audio/edit_audio.wav'
 OUT=sys.argv[1]
 LAG=-4.2066            # side_t = front_t + LAG
 FPS=30; T0=1.40; T1=116.40
 OW,OH=1080,1920
-FACE={'F':(565,780),'S':(645,990)}     # face centres (zoom targets)
+FACE={'F':(565,780),'S':(694,870)}     # face centres (zoom targets)
 BODY={'F':(545,1000),'S':(600,1100)}   # upper-body centres for gentle pushes
 def ease(u): u=min(max(u,0),1); return u*u*(3-2*u)
 # Camera shots: (start, end, cam, [(t, zoom), ...]) - zoom is continuous inside a shot and eased
 # (zero speed at every keyframe), so moves are slow and gentle; jumps happen only at camera cuts.
 SHOTS=[(T0,   35.20,'F',[(T0,1.00),(15.30,1.09),(25.50,1.16),(35.20,1.10)]),
-       (35.20,47.90,'S',[(35.20,1.00),(47.90,1.12)]),
+       (35.20,47.90,'S',[(35.20,1.00),(47.90,1.08)]),
        (47.90,88.30,'F',[(47.90,1.14),(60.00,1.00),(69.00,1.08),(77.60,1.16),(88.30,1.06)]),
-       (88.30,99.90,'S',[(88.30,1.12),(99.90,1.00)]),
+       (88.30,99.90,'S',[(88.30,1.08),(99.90,1.00)]),
        (99.90,T1,   'F',[(99.90,1.00),(110.00,1.10),(T1,1.15)])]
 def params(t):
     for a,b,cam,kf in SHOTS:
