@@ -1,0 +1,21 @@
+<html><head><link rel=stylesheet href=base.css><script src=common.js></script></head><body><div id=h></div>
+<script>
+// 100 cells: first 10 medicine, then 50 life, 20 env, 20 heredity (row-major, bottom-up fill per group)
+const cells=[];['med','life','env','her'].forEach(k=>{const v=F.find(x=>x.k==k).v;for(let i=0;i<v;i++)cells.push(k)});
+function render(t){
+ const V=vis(t); const X=56,Y=100,S=40,G=7;
+ let h=`<div style="position:absolute;left:0;top:0;opacity:${V}">`;
+ h+=`<div class=sh style="position:absolute;left:${X}px;top:${Y-58}px;font-size:22px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.8;white-space:nowrap">Здоровье = 100 клеток</div>`;
+ const cnt={med:0,life:0,env:0,her:0};
+ cells.forEach((k,i)=>{const idx=cnt[k]++, n=F.find(x=>x.k==k).v; const [t0,d]=GROW[k]; const appear=cl((t-(t0+d*idx/n))/0.18);
+  const base=cl((t-IN-i*0.004)/0.3); const c=Math.floor(i/10), rr=i%10; // column-major so groups form blocks
+  const x=X+c*(S+G), y=Y+rr*(S+G); const on=appear>0, col=on?C[k]:'rgba(255,255,255,.10)';
+  const sc=on?0.6+0.4*back(appear):1; const dim=(k=='med'&&t>9.3)?0.6:1;
+  h+=`<div style="position:absolute;left:${x}px;top:${y}px;width:${S}px;height:${S}px;border-radius:12px;background:${col};opacity:${base*(on?dim:1)};transform:scale(${sc})"></div>`;});
+ const lg=[['med',7.6],['life',9.9],['env',10.4],['her',10.9]];
+ h+=`<div style="position:absolute;left:${X}px;top:${Y+10*(S+G)+14}px;width:600px;display:grid;grid-template-columns:300px 290px;gap:8px 14px">`;
+ for(const [k,ts] of lg){const f=F.find(x=>x.k==k); const a=prog(t,ts,0.35);
+  h+=`<div class=sh style="display:flex;align-items:center;gap:10px;opacity:${a};font-weight:700;font-size:19px;white-space:nowrap"><span style="width:18px;height:18px;border-radius:5px;background:${C[k]}"></span>${f.name} <span style="font-weight:800;color:${k=='med'?'#fff':C[k]}">${f.v}%</span></div>`;}
+ h+=`</div></div>`;
+ document.getElementById('h').innerHTML=h;}
+</script></body></html>

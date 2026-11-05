@@ -1,0 +1,20 @@
+<html><head><link rel=stylesheet href=base.css><script src=common.js></script></head><body><div id=h></div>
+<script>
+function word(txt,t0,t,st){const a=prog(t,t0,0.45);return `<span style="display:inline-block;opacity:${a};transform:translateY(${(1-a)*28}px);${st||''}">${txt}</span>`;}
+function render(t){
+ const V=vis(t); const A=1-prog(t,9.05,0.35), B=prog(t,9.30,0.4);
+ const n10=Math.round(10*prog(t,7.15,0.7)), n90=Math.round(90*prog(t,9.36,1.0));
+ let h=`<div class=sh style="position:absolute;left:60px;top:120px;width:600px;opacity:${V}">`;
+ // phase 1
+ h+=`<div style="position:absolute;top:0;opacity:${A}">
+   <div style="font-size:34px;font-weight:700;letter-spacing:.14em;text-transform:uppercase">${word('Медицина',5.5,t)}</div>
+   <div style="font-size:40px;font-weight:600;opacity:.9;margin-top:6px">${word('влияет лишь на',6.3,t)}</div>
+   <div style="font-size:190px;font-weight:900;line-height:.95;letter-spacing:-.03em;margin-top:6px">${word(n10+'%',7.1,t,'color:#fff')}</div></div>`;
+ // phase 2
+ h+=`<div style="position:absolute;top:0;opacity:${B}">
+   <div style="font-size:34px;font-weight:700;letter-spacing:.14em;text-transform:uppercase">${word('Остальные',9.35,t)}</div>
+   <div style="font-size:190px;font-weight:900;line-height:.95;letter-spacing:-.03em;margin-top:6px;color:#7DB2FF">${word(n90+'%',9.6,t,'')}</div>
+   <div style="font-size:36px;font-weight:700;line-height:1.35;margin-top:18px">
+     ${word('<span style="color:#7DB2FF">●</span> образ жизни',10.25,t)}<br>${word('<span style="color:#FFA24D">●</span> окружающая среда',10.6,t)}<br>${word('<span style="color:#5FD385">●</span> наследственность',10.95,t)}</div></div></div>`;
+ document.getElementById('h').innerHTML=h;}
+</script></body></html>

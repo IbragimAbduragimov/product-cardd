@@ -1,0 +1,19 @@
+<html><head><link rel=stylesheet href=base.css><script src=common.js></script></head><body><div id=h></div>
+<script>
+function render(t){
+ const V=vis(t), slide=1-ease((t-IN)/0.55);
+ const rows=[['med',7.15],['life',9.40],['env',10.05],['her',10.55]];
+ let h=`<div style="position:absolute;left:${40-60*slide}px;top:90px;width:590px;padding:30px 34px 26px;border-radius:30px;
+   background:linear-gradient(160deg,rgba(18,24,52,.78),rgba(10,14,34,.62));border:1.5px solid rgba(255,255,255,.14);box-shadow:0 20px 60px rgba(0,0,0,.35);opacity:${V}">
+   <div style="font-size:22px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.75;margin-bottom:22px">От чего зависит здоровье</div>`;
+ for(const [k,ts] of rows){const f=F.find(x=>x.k==k); const a=prog(t,ts-0.15,0.35), gg=g(k,t); const dim=(k=='med'&&t>9.3)?0.5:1;
+  h+=`<div style="display:flex;align-items:center;gap:16px;margin:0 0 20px;opacity:${a*dim};transform:translateX(${(1-a)*30}px)">
+    <div style="width:54px;height:54px;border-radius:16px;background:${C[k]}22;display:flex;align-items:center;justify-content:center">${icon(k,32,k=='med'?'#fff':C[k])}</div>
+    <div style="flex:1"><div style="display:flex;justify-content:space-between;font-weight:700;font-size:23px;margin-bottom:9px"><span>${f.name}</span>
+      <span style="font-weight:800;color:${k=='med'?'#fff':C[k]}">${Math.round(f.v*gg)}%</span></div>
+     <div style="height:14px;border-radius:7px;background:rgba(255,255,255,.12);overflow:hidden"><div style="height:100%;width:${f.v*2*gg}%;border-radius:7px;background:${C[k]}"></div></div></div></div>`;}
+ const s90=prog(t,10.9,0.5);
+ h+=`<div style="margin-top:6px;padding-top:16px;border-top:1px solid rgba(255,255,255,.14);display:flex;justify-content:space-between;align-items:baseline;opacity:${s90}">
+   <span style="font-size:21px;font-weight:600;opacity:.85">Зависит от нас</span><span style="font-size:44px;font-weight:800">90%</span></div></div>`;
+ document.getElementById('h').innerHTML=h;}
+</script></body></html>

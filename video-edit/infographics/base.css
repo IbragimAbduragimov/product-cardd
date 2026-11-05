@@ -1,0 +1,4 @@
+@font-face{font-family:M;src:url(Montserrat.ttf);font-weight:100 900}
+html,body{margin:0;background:transparent;width:1080px;height:1920px;overflow:hidden;font-family:M,Inter,sans-serif;color:#fff}
+#s{position:absolute;inset:0}
+.sh{text-shadow:0 2px 12px rgba(0,0,0,.45)}

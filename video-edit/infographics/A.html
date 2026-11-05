@@ -1,0 +1,28 @@
+<html><head><link rel=stylesheet href=base.css><script src=common.js></script></head><body><svg id=s width=1080 height=1920></svg><div id=h></div>
+<script>
+const CX=330,CY=350,R=270,r=112;
+function arc(a0,a1,R,r){const p=(a,rr)=>[CX+rr*Math.sin(a),CY-rr*Math.cos(a)];const L=a1-a0>Math.PI?1:0;
+ const [x0,y0]=p(a0,R),[x1,y1]=p(a1,R),[x2,y2]=p(a1,r),[x3,y3]=p(a0,r);
+ return `M${x0},${y0}A${R},${R} 0 ${L} 1 ${x1},${y1}L${x2},${y2}A${r},${r} 0 ${L} 0 ${x3},${y3}Z`;}
+function render(t){
+ const V=vis(t); let svg='',html=''; let a=0; const gap=0.012;
+ const order=['med','life','her','env'];
+ for(const k of order){const f=F.find(x=>x.k==k); const span=f.v/100*2*Math.PI; const gg=g(k,t);
+  if(gg>0.001){const a1=a+span*gg; svg+=`<path d="${arc(a+gap,a1-gap,R*(0.92+0.08*back(gg)),r)}" fill="${C[k]}" opacity="${k=='med'&&t>9.3?0.75:1}"/>`;
+   const am=a+span/2, rr=(R+r)/2+(k=='med'?8:0), lx=CX+rr*Math.sin(am), ly=CY-rr*Math.cos(am); const o=cl((gg-0.5)*2);
+   const big=k=='life'?54:k=='med'?28:40;
+   html+=`<div class=sh style="position:absolute;left:${lx-150}px;top:${ly-(k=='life'?78:k=='med'?44:62)}px;width:300px;text-align:center;opacity:${o};font-weight:700">
+     <div>${icon(k,k=='life'?46:k=='med'?26:36,k=='med'?'#2a3350':'#fff')}</div>
+     <div style="font-size:${k=='life'?24:k=='med'?13:19}px;letter-spacing:.06em;text-transform:uppercase;${k=='med'?'color:#2a3350;text-shadow:none':''}">${f.name.replace(' ','<br>')}</div>
+     <div style="font-size:${big}px;font-weight:800;line-height:1.05;${k=='med'?'color:#2a3350;text-shadow:none':''}">${Math.round(f.v*o)}%</div></div>`;}
+  a+=span;}
+ // centre
+ const show90=prog(t,9.4,0.5), show10=prog(t,7.15,0.4)*(1-show90);
+ const n=Math.round(show90>0?10+80*prog(t,9.4,1.6):10*prog(t,7.15,0.75));
+ html+=`<div class=sh style="position:absolute;left:${CX-110}px;top:${CY-58}px;width:220px;text-align:center;opacity:${Math.max(show10,show90)}">
+   <div style="font-size:64px;font-weight:800;line-height:1">${n}%</div>
+   <div style="font-size:16px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.85">${show90>0.5?'зависит от вас':'медицина'}</div></div>`;
+ document.getElementById('s').innerHTML=`<g opacity="${V}" transform="translate(${CX} ${CY}) scale(${0.85+0.15*back(cl((t-IN)/0.6))}) translate(${-CX} ${-CY})">${svg}</g>`;
+ document.getElementById('h').innerHTML=`<div style="opacity:${V}">${html}</div>`;
+}
+</script></body></html>

@@ -62,3 +62,10 @@ ffmpeg -i out/side_instagram.mp4 -i side_fixed.wav -map 0:v -map 1:a -c:v copy -
 Смены камер — в паузах между фразами. Инфографики/текста пока нет.
 Аудио: `ffmpeg -ss 1.40 -to 116.40 -i front_fixed.wav -af "afade=t=in:d=0.08,afade=t=out:st=114.3:d=0.7,loudnorm=I=-14:TP=-1.5:LRA=11" edit_audio.wav`,
 затем `python3 work/edit.py out/montage_v2.mp4 edit_audio.wav`.
+
+## Инфографика — варианты на «10% / 90%» (`out/info/`)
+
+Исходники в `infographics/` (HTML/SVG + `common.js`, шрифт Montserrat). Анимация задаётся функцией `render(t)`
+от времени фронтальной камеры и привязана к словам (см. `transcript.md`). Кадры: `node infographics/shoot.js A 4.5 14.0 30 seq_A`
+(прозрачный PNG 1080×960, верх кадра), затем overlay на монтаж (`-ss 3.1 -t 9.5`).
+A — кольцевая диаграмма, B — шкалы на панели, C — 100 клеток, D — только текст. Пользователь выбирает вариант.
