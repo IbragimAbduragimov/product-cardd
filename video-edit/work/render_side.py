@@ -1,67 +1,63 @@
+"""Side video: stabilize + replace left wall/tape strip with blue + crop floor, rendered in ONE
+resampling step (stabilize, crop and upscale combined into a single Lanczos warp)."""
 import cv2, numpy as np, subprocess, sys
 sys.path.insert(0,'work'); from seg import person
 from cleanbg import BGCleaner, grain, sharpen, ENC
-cleaner=BGCleaner()
 SRC='videos/VID_20261105_144306_140.mp4.mov'
 start=int(sys.argv[1]); count=int(sys.argv[2]); out=sys.argv[3]
-W,H=720,1280
+OW,OH=1080,1920
+# crop window in stabilized reference coords (720x1280): x 20..690, bottom at y=1060 (floor hidden);
+# rows above y=0 do not exist in the source and are filled with backdrop blue.
+X0,CWID,YBOT=20,670,1060
+S=OW/CWID; Y0=YBOT-OH/S
+A=np.array([[S,0,-S*X0],[0,S,-S*Y0],[0,0,1]])
 T=np.load('work/T.npy').reshape(-1,6)
-# smooth transforms (moving average, 15 frames)
 k=15; pad=np.pad(T,((k//2,k//2),(0,0)),mode='edge')
 Ts=np.array([pad[i:i+k].mean(0) for i in range(len(T))]).reshape(-1,2,3)
-cols=np.load('work/cols.npy')
-# vertical profile for blue fill
-prof=cols.copy(); prof[:40]=prof[40]; prof[680:]=prof[680]
+def Mout(i):
+    M=np.vstack([Ts[min(i,len(Ts)-1)],[0,0,1]]); return (A@M)[:2]
+yo,xo=np.mgrid[0:OH,0:OW].astype(np.float32)
+xr=xo/S+X0; yr=yo/S+Y0                       # reference coords of each output pixel
+table=720+0.18*xr
+above=(yr<table-1).astype(np.float32)
+R=((xr<174)&(yr<table-1)).astype(np.float32); R=cv2.GaussianBlur(R,(0,0),2.5*S)
+band=((xr>112)&(xr<178)).astype(np.float32)   # tape-strip column
+# blue fill: vertical colour profile of the backdrop next to the wall (ref coords), slight falloff to the left
+cols=np.load('work/cols.npy'); prof=cols.copy(); prof[:40]=prof[40]; prof[680:]=prof[680]
 prof=cv2.GaussianBlur(prof.reshape(-1,1,3),(1,0),sigmaX=0.1,sigmaY=20).reshape(-1,3)
-xs=np.arange(W,dtype=np.float32)
-hfac=np.where(xs<170,1-0.10*(170-xs)/170,1.0)
-plate=prof[:,None,:]*hfac[None,:,None]
-# real fabric texture from median of backdrop
-cap=cv2.VideoCapture(SRC); fr=[]
-for i in range(100,3351,250):
-    cap.set(1,i); ok,f=cap.read(); fr.append(cv2.warpAffine(f,Ts[i],(W,H)).astype(np.float32))
-med=np.median(np.array(fr),0)
-patch=med[20:520,180:350]; det=patch-cv2.GaussianBlur(patch,(0,0),12)
-tile=np.concatenate([det,det[::-1]],0); tile=np.concatenate([tile,tile[:,::-1]],1)
-reps=(H//tile.shape[0]+1,W//tile.shape[1]+1,1)
-tex=np.tile(tile,reps)[:H,:W]
-plate=plate+tex*0.9
-# replace region: left of backdrop edge, above table back edge
-yy,xx=np.mgrid[0:H,0:W].astype(np.float32)
-tableline=720+0.18*xx
-R=((xx<174)&(yy<tableline-1)).astype(np.float32)
-R=cv2.GaussianBlur(R,(0,0),2.5)
-above=(yy<tableline-1).astype(np.float32)
-CX,CY,CW,CH=60,15,585,1040
-cmd=['ffmpeg','-v','error','-y','-f','rawvideo','-pix_fmt','bgr24','-s','1080x1920','-r','30','-i','-',
-     '-ss',str(start/30),'-t',str(count/30),'-i',SRC,'-map','0:v','-map','1:a',
-     *ENC,'-shortest',out]
+yi=np.clip(yr,0,1279).astype(int)[:,0]
+plate=prof[yi][:,None,:]*np.where(xr<174,1-0.10*(174-xr)/174,1.0)[...,None]
+plate=plate.astype(np.float32)
+cleaner=BGCleaner(sigma=30*S)
+cmd=['ffmpeg','-v','error','-y','-f','rawvideo','-pix_fmt','bgr24','-s',f'{OW}x{OH}','-r','30','-i','-',
+     '-ss',str(start/30),'-t',str(count/30),'-i',SRC,'-map','0:v','-map','1:a',*ENC,'-shortest',out]
 p=subprocess.Popen(cmd,stdin=subprocess.PIPE)
-cap.set(1,start); pm=None; rng=np.random.default_rng(0)
-ones=np.ones((H,W),np.float32)
+cap=cv2.VideoCapture(SRC); cap.set(1,start); pm=None; rng=np.random.default_rng(0)
+ones=np.ones((1280,720),np.float32)
 for i in range(start,start+count):
     ok,f=cap.read()
     if not ok: break
-    M=Ts[min(i,len(Ts)-1)]
-    w=cv2.warpAffine(f,M,(W,H),flags=cv2.INTER_CUBIC,borderMode=cv2.BORDER_REPLICATE).astype(np.float32)
-    valid=cv2.warpAffine(ones,M,(W,H),flags=cv2.INTER_LINEAR,borderValue=0)
-    valid=cv2.erode(valid,np.ones((5,5)))
-    pmask=person(np.clip(w,0,255).astype(np.uint8))
-    pmask=cv2.dilate(pmask,np.ones((5,5)))
-    pmask=cv2.GaussianBlur(pmask,(0,0),1.5)
-    pm=pmask if pm is None else 0.5*pm+0.5*pmask
-    pm[:320]=0
-    b,g,r=w[...,0],w[...,1],w[...,2]
-    near=cv2.dilate((pm>0.3).astype(np.uint8),np.ones((41,41),np.uint8))>0
-    keep=(((r-b>22)&(r>90)) | ((b+g+r)/3>215)) & near
-    keep=cv2.GaussianBlur(cv2.dilate(keep.astype(np.float32),np.ones((5,5))),(0,0),1.5)
-    prot=np.clip(np.maximum(pm*1.2,keep),0,1)
+    M=Mout(i)
+    w=cv2.warpAffine(f,M,(OW,OH),flags=cv2.INTER_LANCZOS4,borderMode=cv2.BORDER_REPLICATE).astype(np.float32)
+    valid=cv2.warpAffine(ones,M,(OW,OH),flags=cv2.INTER_LINEAR,borderValue=0)
+    valid=cv2.erode(valid,np.ones((7,7)))
+    m=person(np.clip(w,0,255).astype(np.uint8)); m[yr<320]=0
+    pm=m if pm is None else 0.5*pm+0.5*m
+    b,g,r=w[...,0],w[...,1],w[...,2]; v=(b+g+r)/3
+    mu=cv2.blur(v,(9,9)); lstd=np.sqrt(np.maximum(cv2.blur(v*v,(9,9))-mu*mu,0))
+    near=cv2.dilate((pm>0.3).astype(np.uint8),np.ones((61,61),np.uint8))>0
+    skin=(r-b>22)&(r>90)
+    white=(v>205)|((v>183)&(lstd<9))         # sleeve: bright and smooth; tape strip is grey and speckled
+    keep=(skin|white)&near
+    keep=cv2.morphologyEx(keep.astype(np.uint8),cv2.MORPH_OPEN,np.ones((7,7),np.uint8))>0
+    core=cv2.erode((pm>0.5).astype(np.uint8),np.ones((9,9),np.uint8))>0
+    # outside the strip column trust the person mask; inside it only colour decides (removes the strip)
+    stripish=(r-b>5)&(v<192)&~skin              # warm grey = tape strip / wall; sleeve shadows are cool
+    prot=np.where(band>0, keep|(core&~stripish), keep|core).astype(np.float32)
+    prot=cv2.GaussianBlur(prot,(0,0),2.0)
     a=np.maximum(R,(1-valid)*above)*(1-prot)
-    fill=plate+rng.normal(0,1.3,(H,W,1)).astype(np.float32)
-    o=w*(1-a[...,None])+fill*a[...,None]
+    o=w*(1-a[...,None])+plate*a[...,None]
     o=cleaner(o,pm)
-    c=o[CY:CY+CH,CX:CX+CW]
-    c=cv2.resize(np.clip(c,0,255).astype(np.uint8),(1080,1920),interpolation=cv2.INTER_LANCZOS4)
-    c=grain(sharpen(c),rng)
+    c=grain(sharpen(np.clip(o,0,255).astype(np.uint8),amt=0.35),rng)
     p.stdin.write(c.tobytes())
 p.stdin.close(); p.wait()
