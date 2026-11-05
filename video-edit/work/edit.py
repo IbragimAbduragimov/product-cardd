@@ -1,4 +1,4 @@
-"""Montage v1: front camera as base + audio, two cuts to the side camera, punch-ins and slow zooms.
+"""Montage v2 (smooth zooms only): front camera as base + audio, two cuts to the side camera, punch-ins and slow zooms.
 Times are FRONT-camera seconds; all cuts sit in pauses between phrases."""
 import cv2, numpy as np, subprocess, sys
 sys.path.insert(0,'work'); from cleanbg import ENC
@@ -10,26 +10,21 @@ OW,OH=1080,1920
 FACE={'F':(565,780),'S':(645,990)}     # face centres (zoom targets)
 BODY={'F':(545,1000),'S':(600,1100)}   # upper-body centres for gentle pushes
 def ease(u): u=min(max(u,0),1); return u*u*(3-2*u)
-# (start, end, cam, z_start, z_end, centre)
-TL=[(T0,  15.30,'F',1.00,1.10,'body'),
-    (15.30,20.60,'F',1.22,1.25,'face'),   # punch-in
-    (20.60,35.20,'F',1.00,1.08,'body'),
-    (35.20,47.90,'S',1.00,1.12,'face'),   # side camera 1
-    (47.90,60.00,'F',1.18,1.00,'face'),   # slow pull-out
-    (60.00,69.00,'F',1.00,1.04,'body'),
-    (69.00,77.60,'F',1.22,1.25,'face'),   # punch-in
-    (77.60,88.30,'F',1.00,1.10,'body'),
-    (88.30,99.90,'S',1.14,1.00,'face'),   # side camera 2, pull-out
-    (99.90,T1,   'F',1.00,1.16,'face')]   # slow push to the end
+# Camera shots: (start, end, cam, [(t, zoom), ...]) - zoom is continuous inside a shot and eased
+# (zero speed at every keyframe), so moves are slow and gentle; jumps happen only at camera cuts.
+SHOTS=[(T0,   35.20,'F',[(T0,1.00),(15.30,1.09),(25.50,1.16),(35.20,1.10)]),
+       (35.20,47.90,'S',[(35.20,1.00),(47.90,1.12)]),
+       (47.90,88.30,'F',[(47.90,1.14),(60.00,1.00),(69.00,1.08),(77.60,1.16),(88.30,1.06)]),
+       (88.30,99.90,'S',[(88.30,1.12),(99.90,1.00)]),
+       (99.90,T1,   'F',[(99.90,1.00),(110.00,1.10),(T1,1.15)])]
 def params(t):
-    for a,b,cam,z0,z1,c in TL:
-        if a<=t<b:
-            z=z0+(z1-z0)*ease((t-a)/(b-a))
-            f=FACE[cam] if c=='face' else BODY[cam]
-            # blend centre from frame centre (z=1) towards the target as we zoom in
-            k=min(1,(z-1)/0.15) if z>1 else 0
-            cx=OW/2+(f[0]-OW/2)*k; cy=OH/2+(f[1]-OH/2)*k
-            return cam,z,cx,cy
+    for a,b,cam,kf in SHOTS:
+        if a<=t<b or (b==T1 and t>=a):
+            z=kf[-1][1]
+            for (ta,za),(tb,zb) in zip(kf,kf[1:]):
+                if ta<=t<=tb: z=za+(zb-za)*ease((t-ta)/(tb-ta)); break
+            f=FACE[cam]; k=min(1,(z-1)/0.2)
+            return cam,z,OW/2+(f[0]-OW/2)*k,OH/2+(f[1]-OH/2)*k
     return 'F',1,OW/2,OH/2
 def zoom(img,z,cx,cy):
     if z<=1.0001: return img
