@@ -23,8 +23,8 @@ const I={
 const ic=(k,s,col)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" style="color:${col};flex:none">${I[k]}</svg>`;
 const BLUE='#4C86FF',ORANGE='#FF9433',GREEN='#3CC46B',RED='#FF5A5A';
 const SC=[ // [in, out, renderer(t, enterAlpha)]
- [1.45,5.25,hook],[21.55,31.75,lifeList],[31.90,41.75,habits],[46.40,53.70,envGroups],
- [54.00,59.95,control],[60.30,68.95,stress],[73.75,80.70,fate],[81.00,93.30,family],[111.25,116.60,finale]];
+ [1.45,5.25,hook],[21.55,31.75,lifeList],[31.90,41.75,habits],   // removed by request: envGroups 46.40–53.70, control 54.00–59.95
+ [60.30,68.95,stress],[73.75,80.70,fate],[81.00,93.30,family],[111.25,116.60,finale]];
 function A(t,t0,d=0.45){return ease((t-t0)/d);}
 function item(a,html,extra=''){return `<div style="opacity:${a};transform:translateY(${(1-a)*22}px);${extra}">${html}</div>`;}
 const panel=(inner,w=590)=>`<div style="position:absolute;left:44px;top:92px;width:${w}px;padding:28px 30px 24px;border-radius:30px;box-sizing:border-box;
