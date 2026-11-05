@@ -1,4 +1,4 @@
-<html><head><link rel=stylesheet href=base.css><script src=common.js></script></head><body><div id=h></div>
+<html><head><meta charset="utf-8"><link rel=stylesheet href=base.css><script src=common.js></script></head><body><div id=h></div>
 <script>
 // 100 cells: first 10 medicine, then 50 life, 20 env, 20 heredity (row-major, bottom-up fill per group)
 const cells=[];['med','life','env','her'].forEach(k=>{const v=F.find(x=>x.k==k).v;for(let i=0;i<v;i++)cells.push(k)});
