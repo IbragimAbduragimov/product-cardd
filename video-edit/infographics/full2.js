@@ -4,7 +4,8 @@
 const CX=330,CY=350,R=270,r=112;
 const REVEAL={life:14.35,env:42.30,her:69.90};
 // appearance windows [in, out]
-const WIN=[[5.45,21.00],[41.95,50.00],[69.55,77.00],[95.55,103.50]];   // long holds
+const WIN=[[5.45,21.00],[41.95,46.20],[69.55,73.60],[95.55,109.00]];   // env/her shorter: info cards follow
+const FOCUS2=[[100.95,'life'],[104.40,'env'],[107.80,'her']];        // finale: highlight on each word
 const FINAL=95.55;
 function V(t){let v=0;for(const [a,b] of WIN)v=Math.max(v,ease((t-a)/0.45)*(1-ease((t-b)/0.5)));return v;}
 function arc(a0,a1,R,r){const p=(a,rr)=>[CX+rr*Math.sin(a),CY-rr*Math.cos(a)];const L=a1-a0>Math.PI?1:0;
@@ -16,11 +17,12 @@ function render(t){
  if(vis<=0.001){document.getElementById('s').innerHTML='';document.getElementById('h').innerHTML='';return;}
  const intro=t<14.0;   // growth animation only in the intro
  // which factor is being revealed in this window (for emphasis)
- let focus=null; for(const k in REVEAL){if(t>=REVEAL[k]-0.4&&t<REVEAL[k]+3.0&&t<FINAL)focus=k;}
+ let focus=null, ft=0; for(const k in REVEAL){if(t>=REVEAL[k]-0.4&&t<REVEAL[k]+3.0&&t<FINAL){focus=k;ft=REVEAL[k];}}
+ for(const [tt,k] of FOCUS2){if(t>=tt-0.2){focus=k;ft=tt;}}
  let svg='',html=''; let a=0; const gap=0.012; const order=['med','life','her','env'];
  for(const k of order){const f=F.find(x=>x.k==k); const span=f.v/100*2*Math.PI; const gg=intro?g(k,t):1;
   const rv=k=='med'?1:ease((t-REVEAL[k])/0.6);
-  const pop=focus==k?1+0.05*Math.sin(Math.PI*cl((t-REVEAL[k])/0.9)):1;
+  const pop=focus==k?1+0.05*Math.sin(Math.PI*cl((t-ft)/0.9)):1;
   const dim=(focus&&focus!=k&&k!='med')?0.85:1;
   if(gg>0.001){const a1=a+span*gg;
    let fill=C[k];
